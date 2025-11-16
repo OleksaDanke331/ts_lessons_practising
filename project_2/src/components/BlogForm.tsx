@@ -1,0 +1,112 @@
+import React, { useEffect, useState } from "react";
+import { useBlogs } from "../shared/BlogContext";
+import type { Blog } from "../types";
+
+//Props (Properties that the component accepts)
+interface BlogFormProps {
+  existingBlog?: Blog;
+  onClose: () => void;
+}
+
+const BlogForm: React.FC<BlogFormProps> = ({ existingBlog, onClose }) => {
+  //Getting functions to work with context
+  const { addBlog, updateBlog } = useBlogs();
+
+  //Local Form State (initial value is taken from existingBlog or an empty string)
+  const [title, setTitle] = useState(existingBlog?.title || "");
+  const [description, setDescription] = useState(
+    existingBlog?.description || ""
+  );
+  const [image, setImage] = useState(existingBlog?.image || "");
+  const [time, setTime] = useState(existingBlog?.time || "");
+
+  //for Edit Mode Sync
+  useEffect(() => {
+    if (existingBlog) {
+      setTitle(existingBlog.title);
+      setDescription(existingBlog.description);
+      setImage(existingBlog.image);
+      setTime(existingBlog.time);
+    }
+  }, [existingBlog]);
+
+  //Form Submission Processing
+  const handleSubmit = () => {
+    // Create a new article object
+    const blog: Blog = {
+      id: existingBlog ? existingBlog.id : Date.now(),
+      title,
+      description,
+      image,
+      time,
+    };
+
+    //Choose an action: update or add
+    if (existingBlog) {
+      updateBlog(blog);
+    } else {
+      addBlog(blog);
+    }
+
+    onClose();
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg w-[30rem] mx-auto">
+      <h3 className="font-semibold text-xl mb-2 text-gray-800">
+        {existingBlog ? "Edit Blog" : "Add Blog"}
+      </h3>
+
+      <div className="space-y-5">
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
+
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
+
+        <input
+          type="text"
+          placeholder="Imag URL"
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          className="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
+
+        <input
+          type="date"
+          placeholder="Time"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
+          className="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+        />
+      </div>
+
+      <section className="flex justify-end mt-6 space-x-4">
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-black"
+        >
+          {existingBlog ? "Update" : "Add"}
+        </button>
+
+        <button
+          onClick={onClose}
+          className="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold shadwo-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          Cancel
+        </button>
+      </section>
+    </div>
+  );
+};
+
+export default BlogForm;
